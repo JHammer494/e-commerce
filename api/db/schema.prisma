@@ -8,11 +8,144 @@ generator client {
   binaryTargets = "native"
 }
 
-// Define your own datamodels here and run `yarn redwood prisma migrate dev`
-// to create migrations for them and apply to your dev DB.
-// TODO: Please remove the following example:
-model UserExample {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+model product {
+  id                    Int                     @id @default(autoincrement())
+  name                  String
+  description           String
+  product_image         String?
+  artist                String?
+  product_configuration product_configuration[]
+  order                 order[]
+  product_item          product_item[]
 }
+
+// Table product {
+//   id int [pk]
+//   name string
+//   description string
+//   product_image string
+
+//   category_id int [ref: > product_category.id]
+// }
+
+model product_item {
+  id            Int     @id @default(autoincrement())
+  sku           String
+  qty_in_stock  Int
+  product_image String?
+  price         Float
+  pro_price     Float
+
+  product_id_ref product @relation(fields: [product_id], references: [id])
+  product_id     Int
+}
+
+// Table product_item {
+//   id int [pk]
+//   SKU string
+//   qty_in_stock int
+//   product_image string
+//   price float
+
+//   product_id int [ref: > product.id]
+// }
+
+model product_configuration {
+  id                  Int              @id @default(autoincrement())
+  product_item        Int
+  product_item_id     product          @relation(fields: [product_item], references: [id])
+  variation_option    Int
+  variation_option_id variation_option @relation(fields: [variation_option], references: [id])
+
+  @@unique([product_item, variation_option])
+}
+
+// Table product_configuration {
+
+//   product_item_id int [ref: > product_item.id]
+//   variation_option_id int [ref: > variation_option.id]
+// }
+
+model variation_option {
+  id                    Int                     @id @default(autoincrement())
+  value                 String
+  variation             Int
+  variation_id          variation               @relation(fields: [variation], references: [id])
+  product_configuration product_configuration[]
+}
+
+// Table variation_option {
+//   id int [pk]
+//   value string
+
+//   variation_id int [ref: > variation.id]
+// }
+
+model variation {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  variation_option variation_option[]
+}
+
+// Table variation {
+//   id int [pk]
+//   name string
+
+//   category_id int [ref: > product_category.id]
+// }
+
+model product_category {
+  id                 Int                  @id @default(autoincrement())
+  category_name      String
+  promotion_category promotion_category[]
+}
+
+// Table product_category {
+//   id int [pk]
+//   category_name string
+
+//   parent_category_id int [ref: > product_category.id]
+// }
+
+model promotion_category {
+  id          Int              @id @default(autoincrement())
+  category    Int
+  category_id product_category @relation(fields: [category], references: [id])
+}
+
+// Table promotion_category {
+
+//   category_id int [ref: > product_category.id]
+//   promotion_id int [ref: > promotion.id]
+// }
+
+model promotion {
+  id            Int      @id @default(autoincrement())
+  name          String
+  description   String
+  discount_rate Int
+  start_date    DateTime
+  end_date      DateTime
+}
+
+// Table promotion {
+//   id int
+//   name string
+//   description string
+//   discount_rate int
+//   start_date datetime
+//   end_date datetime
+// }
+
+model order {
+  id      Int     @id @default(autoincrement())
+  item    Int
+  item_id product @relation(fields: [item], references: [id])
+}
+
+// Table order {
+//   id int
+
+//   item int [ref: > product.id]
+// }
